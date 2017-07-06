@@ -1,14 +1,15 @@
 require "httparty"
 require "json"
-# require "roadmap"
+require "roadmap"
 
 class Kele
   include HTTParty
-  # include Roadmap
+  include Roadmap
 
   def initialize(email, password)
     response = self.class.post(api_url + "sessions", body: { "email": email, "password": password })
     raise "Invalid email or password" if response.code != 200
+    @email = email
     @auth_token = response["auth_token"]
   end
 
@@ -22,15 +23,16 @@ class Kele
     @mentor_availability = JSON.parse(response.body)
   end
 
-  def get_roadmap(roadmap_id)
-    response = self.class.get(api_url + "roadmaps/#{roadmap_id}", headers: {"authorization" => @auth_token})
-    @roadmap = JSON.parse(response.body)
+  def get_messages(page)
+    response = self.class.get(api_url + "message_threads?page=#{page}", headers: {"authorization" => @auth_token})
+    @messages = JSON.parse(response.body)
   end
 
-  def get_checkpoint(checkpoint_id)
-    response = self.class.get(api_url + "checkpoints/#{checkpoint_id}", headers: {"authorization" => @auth_token})
-    @checkpoint = JSON.parse(response.body)
+  def create_message(sender_email, recipient_id, subject, message)
+    response = self.class.post(api_url + "messages", body: { "sender": "megan.wilkin@blueostrichdesign.co.uk", "recipient_id": recipient_id,"subject": subject, "stripped-text": message }, headers: {"authorization" => @auth_token})
+    puts response.body
   end
+
 
 private
 
